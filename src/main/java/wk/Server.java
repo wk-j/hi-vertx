@@ -1,9 +1,9 @@
 package wk;
 
-import javax.xml.ws.Response;
-
+import io.netty.util.internal.SocketUtils;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
@@ -28,17 +28,17 @@ public class Server extends AbstractVerticle {
         router.post("/upload").handler(context -> {
             HttpServerResponse response = context.response();
             HttpServerRequest request = context.request();
-
             request.setExpectMultipart(true);
+
             request.uploadHandler(uploadRequest -> {
                 uploadRequest.endHandler(v -> {
-                    response.setChunked(true).end(new JsonObject().put("success", true).encode());
+                    String text = request.getFormAttribute("text");
+                    response.setChunked(true).end(new JsonObject().put("success", true).put("text", text).encode());
                 });
+
                 uploadRequest.streamToFileSystem("temp/README.md");
             });
-
             response.putHeader("Content-Type", "application/json");
-
         });
 
         vertx.createHttpServer().requestHandler(router::accept).listen(config().getInteger("http.port", 8000),
