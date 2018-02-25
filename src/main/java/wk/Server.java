@@ -1,21 +1,27 @@
 package wk;
 
+import javax.xml.ws.Response;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
 public class Server extends AbstractVerticle {
     public void start(Future<Void> fut) {
         Router router = Router.router(vertx);
-        router.route("/").handler(context -> {
-            HttpServerResponse response = context.response();
-            response.putHeader("Content-Type", "text/plain").end("Home");
+        router.get("/").handler(context -> {
+            context.response().putHeader("Content-Type", "text/plain").end("Home");
         });
 
-        router.route("/hello").handler(context -> {
-            HttpServerResponse response = context.response();
-            response.putHeader("Content-Type", "text/plain").end("Hello");
+        router.get("/hello").handler(context -> {
+            context.response().putHeader("Content-Type", "text/plain").end("Hello");
+        });
+
+        router.get("/add").handler(context -> {
+            context.response().putHeader("Content-Type", "application/json")
+                    .end(new JsonObject().put("result", 1 + 1).encode());
         });
 
         vertx.createHttpServer().requestHandler(router::accept).listen(config().getInteger("http.port", 8000),
